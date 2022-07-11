@@ -2,7 +2,13 @@ from django.shortcuts import render, get_object_or_404
 
 from django.http import HttpResponse
 
-from .models import Post, Group, User
+from .models import Post, Group, User, Book
+from django.views.generic import FormView
+from django.views.generic import CreateView
+from .forms import PostForm, BookForm
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render_to_response, redirect
+from django.urls import reverse_lazy
 
 import datetime as dt
 
@@ -37,29 +43,44 @@ def group_posts(request, slug):
     posts = group.posts555.all()[:12]
     return render(request, "group.html", {"group": group, "posts": posts})
 
-# def my_index(request):
-#     plans = [
-#         {
-#             "name": "Бесплатно",
-#             "price": "0",
-#             "options": {"users": 10, "space": 10, "support": "Почтовая рассылка"},
-#         },
-#         {
-#             "name": "Профессиональный",
-#             "price": "49",
-#             "options": {"users": 50, "space": 100, "support": "Телефон и email"},
-#         },
-#         {
-#             "name": "Корпоративный",
-#             "price": "99",
-#             "options": {"users": 100, "space": 500, "support": "Персональный менеджер"},
-#         },
-#     ]
-#     data = {'plans' : plans}
-#     return render(
-#         request,  # первый параметр — это всегда request
-#         'index.html',  # имя шаблона, который нужен для отображения страницы
-#         context=data
-#         # {'plans': 'Этот текст встанет в шаблон на место переменной "title"'}
-#         # словарь содержит переменные, которые будут переданы в шаблон
-#     )
+
+@login_required()
+def new_post(request):
+    """Добавить новую запись, если пользователь зарегистрирован"""
+    if request.method == 'POST':
+        form = PostForm(request.POST)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.author = request.user
+            post.save()
+            return redirect('index')
+        else:
+            return render(request, 'new.html', {'form': form})
+    else:
+        form = PostForm()
+    return render(request, 'new.html', {'form': form})
+
+
+
+class Test(CreateView):
+    form_class = BookForm
+    success_url = reverse_lazy("index") #  где login — это параметр "name" в path()
+    template_name = "test.html"
+
+
+# class PostForm(FormView):
+#     form_class = PostForm
+#     success_url = reverse_lazy("index") #  где login — это параметр "name" в path()
+#     template_name = "new.html"
+#
+#     def form_valid(self, form):
+#         # This method is called when valid form data has been POSTed.
+#         # It should return an HttpResponse.
+#         group = form.cleaned_data['group']
+#         text = form.cleaned_data['text']
+#
+#
+#         Post.objects.create(text=text, group_id=Group.objects.get(title=group).id, author_id=User.objects.get(username='admin').id)
+#
+#         return super().form_valid(form)
+

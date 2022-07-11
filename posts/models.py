@@ -26,15 +26,22 @@ class Post(models.Model):
         return self.text
 
 
-
-
-class New(models.Model):
-    title = models.CharField(max_length=200)
-    description = models.TextField()
-    slug = models.SlugField(unique=True)
+class Book(models.Model):
+    text = models.TextField()
+    pub_date = models.DateTimeField("date published", auto_now_add=True)
+    author1 = models.CharField(max_length=20)
 
     def __str__(self):
-        return self.title
+        return self.text
+
+
+# class New(models.Model):
+#     title = models.CharField(max_length=200)
+#     description = models.TextField()
+#     slug = models.SlugField(unique=True)
+#
+#     def __str__(self):
+#         return self.title
 
 
 # from django.db import models
