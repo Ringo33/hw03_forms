@@ -25,7 +25,12 @@ SECRET_KEY = '95hqn=#ixw$afsrk=19kf0gb(&^@d=_evb-rx=9iu*co(76i52'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+        "localhost",
+        "127.0.0.1",
+        "[::1]",
+        "testserver",
+]
 
 
 # Application definition
