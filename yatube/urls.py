@@ -23,7 +23,7 @@ urlpatterns = [
     path("auth/", include("users.urls")),
     path("auth/", include("django.contrib.auth.urls")),
     path('admin/', admin.site.urls),
-    path("", include("posts.urls")),
+
 ]
 
 urlpatterns += [
@@ -31,4 +31,5 @@ urlpatterns += [
         path('terms/', views.flatpage, {'url': '/terms/'}, name='terms'),
         path('about-author/', views.flatpage, {'url': '/about-author/'}, name='about'),
         path('about-spec/', views.flatpage, {'url': '/about-spec/'}, name='terms'),
+        path("", include("posts.urls")),
 ]

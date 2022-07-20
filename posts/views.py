@@ -10,6 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render_to_response, redirect
 from django.urls import reverse_lazy
 from django.core.paginator import Paginator
+from django.http import HttpResponseNotFound
 
 import datetime as dt
 
@@ -75,7 +76,12 @@ def new_post(request):
             return render(request, 'new.html', {'form': form})
     else:
         form = PostForm()
-    return render(request, 'new.html', {'form': form})
+    return render(request, 'new.html',
+                  {'form': form,
+                   'button_name': 'Добавить',
+                   'title': 'Добавить запись',
+                   'url_name': 'new_post'}
+                  )
 
 
 
@@ -88,22 +94,62 @@ class Test(CreateView):
 
 def profile(request, username):
     user = get_object_or_404(User, username=username)
-
-
-    return render(request, 'profile.html', {})
+    posts = user.posts555.order_by('-pub_date').all()
+    paginator = Paginator(posts, 10)
+    page_number = request.GET.get('page')
+    page = paginator.get_page(page_number)
+    context = {
+        'name': user,
+        'posts_count': user.posts555.count(),
+        'author': request.user,
+        "paginator": paginator,
+        "page": page,
+    }
+    return render(request, 'profile.html', context=context)
 
 
 def post_view(request, username, post_id):
-    # тут тело функции
-    return render(request, 'post.html', {})
+    user = get_object_or_404(User, username=username)
+    # post = user.posts555.get(id = post_id)
+    post = get_object_or_404(Post, id=post_id, author_id=user.id)
+    context = {
+        'name': user,
+        'post': post,
+        'author': request.user,
+    }
+    return render(request, 'post.html', context=context)
 
 
+@login_required()
 def post_edit(request, username, post_id):
     # тут тело функции. Не забудьте проверить,
     # что текущий пользователь — это автор записи.
     # В качестве шаблона страницы редактирования укажите шаблон создания новой записи
     # который вы создали раньше (вы могли назвать шаблон иначе)
-    return render(request, 'post_new.html', {})
+    user = get_object_or_404(User, username=username)
+    post = get_object_or_404(Post, id=post_id, author_id = user.id)
+
+    if username == request.user.username:
+        if request.method == 'POST':
+            form = PostForm(request.POST, instance=post)
+            if form.is_valid():
+                post = form.save(commit=False)
+                post.author = request.user
+                post.save()
+                return redirect('profile', username=username)
+        else:
+            form = PostForm(instance=post)
+        return render(request, 'new.html',
+                      {'form': form,
+                       'post_id': post_id,
+                       'username': username,
+                       'button_name': 'Сохранить',
+                       'title': 'Редактировать запись',
+                       'url_name': 'post_edit'}
+                      )
+    else:
+        return redirect('post', username=username, post_id=post_id)
+        # return HttpResponseNotFound("Page not found (404)")
 
 
 

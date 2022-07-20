@@ -2,18 +2,14 @@
 
 <!doctype html>
 <html>
+
     <body>
+
             {% block title %}{{ title }}{% endblock %}
             {% block header %}{{ title }}{% endblock %}
-
             {% block content %}
 
-            {% if url_name == 'post_edit' %}
-            <form method="post" action="{% url url_name username=username post_id=post_id %}">
-            {% elif url_name == 'new_post'%}
-            <form method="post" action="{% url url_name %}">
-            {% endif %}
-
+            <form method="post" action="{% url 'post_edit' username=username post_id=post_id %}">
             {% csrf_token %}
             {% for field in form %}
                 <div class="form-group row" aria-required={% if field.field.required %}"true"{% else %}"false"{% endif %}>
@@ -28,12 +24,19 @@
                 </div>
             {% endfor %}
 
+
                 <div class="col-md-6 offset-md-4">
                     <button type="submit" class="btn btn-primary"  name="mybtn" }>
                         {{ button_name }}
                     </button>
+
                 </div>
+
             </form>
+
+
+
+
 
             {% endblock %}
     </body>
