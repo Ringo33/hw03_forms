@@ -9,10 +9,10 @@ from .models import Post, Book
 # )
 
 
-class PostForm(ModelForm):
+class PostForm(forms.ModelForm):
     class Meta:
         model = Post
-        fields = ['group', 'text']
+        fields = ['group', 'text', 'image']
 
 # class PostForm(forms.Form):
 #     group = forms.ChoiceField(choices=GROUPS, required = False)

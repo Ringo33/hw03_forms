@@ -19,8 +19,7 @@ class Post(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="posts555")
     group = models.ForeignKey(Group, on_delete=models.DO_NOTHING, blank=True,
                               null=True, related_name="posts555")
-    # group = models.ForeignKey(Group, on_delete=models.SET_NULL, blank=True, null=True)
-    # group = models.TextField(blank=True, null=True)
+    image = models.ImageField(upload_to='posts/', blank=True, null=True)
 
     def __str__(self):
         return self.text

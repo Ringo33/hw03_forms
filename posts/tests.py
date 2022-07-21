@@ -73,3 +73,8 @@ class ProfileTest(TestCase):
                                         'post_id': self.post.id})
         ):
             self.assertContains(self.client.get(url), "New post from test_user_1")
+
+
+    def test_status_404(self):
+        response = self.client.get("/qwerty123123/")
+        self.assertEqual(response.status_code, 404)

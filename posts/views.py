@@ -116,6 +116,7 @@ def post_view(request, username, post_id):
         'name': user,
         'post': post,
         'author': request.user,
+        'posts_count': user.posts555.count(),
     }
     return render(request, 'post.html', context=context)
 
@@ -131,7 +132,7 @@ def post_edit(request, username, post_id):
 
     if username == request.user.username:
         if request.method == 'POST':
-            form = PostForm(request.POST, instance=post)
+            form = PostForm(request.POST or None, files=request.FILES or None, instance=post)
             if form.is_valid():
                 post = form.save(commit=False)
                 post.author = request.user
@@ -145,11 +146,25 @@ def post_edit(request, username, post_id):
                        'username': username,
                        'button_name': 'Сохранить',
                        'title': 'Редактировать запись',
-                       'url_name': 'post_edit'}
+                       'url_name': 'post_edit',}
                       )
     else:
         return redirect('post', username=username, post_id=post_id)
-        # return HttpResponseNotFound("Page not found (404)")
+
+
+def page_not_found(request, exception):
+    # Переменная exception содержит отладочную информацию,
+    # выводить её в шаблон пользователской страницы 404 мы не станем
+    return render(
+        request,
+        "misc/404.html",
+        {"path": request.path},
+        status=404
+    )
+
+
+def server_error(request):
+    return render(request, "misc/500.html", status=500)
 
 
 
