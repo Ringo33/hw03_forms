@@ -1,7 +1,8 @@
 from django.test import TestCase, Client
 from django.contrib.auth import get_user_model
-from .models import Post
+from .models import Post, Group
 from django.urls import reverse
+
 
 User = get_user_model()
 
@@ -20,7 +21,7 @@ class ProfileTest(TestCase):
         )
         # создаём пост от имени пользователя
         self.post = Post.objects.create(text="Test post from test_user_1", author=self.user)
-
+        self.group = Group.objects.create(title="Pilots", description="Тестовая группа", slug="pilots")
 
     def test_new_user_profile(self):
 
@@ -78,3 +79,54 @@ class ProfileTest(TestCase):
     def test_status_404(self):
         response = self.client.get("/qwerty123123/")
         self.assertEqual(response.status_code, 404)
+
+
+    def test_img(self):
+        self.client.login(username="test_user_1", password="test_123")
+
+        with open('media/posts/1.jpg', 'rb') as img:
+            post = self.client.post(reverse('new_post'),
+                                    data={
+                                        'author': self.user,
+                                        'text': 'post with image',
+                                        'group': self.group.pk,
+                                        'image': img
+                                    },
+                                    follow=True)
+
+        self.assertEqual(post.status_code, 200)
+        self.assertEqual(Post.objects.count(), 2)
+
+        # print(response.content.decode())
+
+        post_id = Post.objects.get(text='post with image').id
+
+
+        urls = [
+            '',
+            reverse('profile', kwargs={'username': self.user.username}),
+            reverse('post', kwargs={'username': self.user.username , 'post_id': post_id}),
+            reverse('group', kwargs={'slug': self.group.slug})
+        ]
+
+        for url in urls:
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, 200)
+            self.assertContains(response, 'img')
+
+
+    def test_not_img(self):
+        self.client.login(username="test_user_1", password="test_123")
+
+        with open('media/posts/123.xlsx', 'rb') as img:
+            post = self.client.post(reverse('new_post'),
+                                    data={
+                                        'author': self.user,
+                                        'text': 'post with image',
+                                        'group': self.group.pk,
+                                        'image': img
+                                    },
+                                    follow=True)
+
+        self.assertEqual(post.status_code, 200)
+        self.assertEqual(Post.objects.count(), 2)

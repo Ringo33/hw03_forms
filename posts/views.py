@@ -2,10 +2,10 @@ from django.shortcuts import render, get_object_or_404
 
 from django.http import HttpResponse
 
-from .models import Post, Group, User, Book
+from .models import Post, Group, User, Comment, Book
 from django.views.generic import FormView
 from django.views.generic import CreateView
-from .forms import PostForm, BookForm
+from .forms import PostForm, BookForm, CommentForm
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render_to_response, redirect
 from django.urls import reverse_lazy
@@ -66,7 +66,7 @@ def group_posts(request, slug):
 def new_post(request):
     """Добавить новую запись, если пользователь зарегистрирован"""
     if request.method == 'POST':
-        form = PostForm(request.POST)
+        form = PostForm(request.POST or None, files=request.FILES or None)
         if form.is_valid():
             post = form.save(commit=False)
             post.author = request.user
@@ -117,8 +117,31 @@ def post_view(request, username, post_id):
         'post': post,
         'author': request.user,
         'posts_count': user.posts555.count(),
+        'form': PostForm(),
+        'items': Comment.objects.order_by('-created').filter(post_id=post_id),
     }
     return render(request, 'post.html', context=context)
+
+@login_required()
+def add_comment(request, username, post_id):
+    if request.method == 'POST':
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.author = request.user
+            comment.post = Post.objects.get(id=post_id)
+            comment.save()
+            return redirect('post', username=username, post_id=post_id)
+        else:
+            return render(request, 'comments.html', {'form': form})
+    else:
+        form = CommentForm()
+        return render(request, 'comments.html',
+                      {'form': form,
+                       'items': Comment.objects.order_by('created').filter(post_id=post_id),
+                       'post': Post.objects.get(id=post_id)
+                       }
+                      )
 
 
 @login_required()
